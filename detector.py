@@ -1,9 +1,10 @@
+import os
 import subprocess
 import requests
 import time
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1558554531283865684/cip-rzOF1bIXilCnF41DfM5epIHJ0hOL2CyGlDL9kU7d-lfW2E_PPK41YSfvOcFxVolI"
-CONTAINER_NAME = "wizardly_feynman"
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+CONTAINER_NAME = os.environ.get("JUICESHOP_CONTAINER_NAME", "wizardly_feynman")
 
 PATTERNS = [
     "UNION SELECT",
@@ -16,8 +17,11 @@ PATTERNS = [
 ]
 
 def send_alert(line):
+    if not WEBHOOK_URL:
+        print(f"[ALERT - NO WEBHOOK SET] {line.strip()}")
+        return
     try:
-        requests.post(WEBHOOK_URL, json={"content": f"🚨 ALERT: {line.strip()}"})
+        requests.post(WEBHOOK_URL, json={"content": f"🚨 ALERT: {line.strip()}"}, timeout=5)
         print(f"[ALERT SENT] {line.strip()}")
     except Exception as e:
         print(f"[ERROR sending alert] {e}")
